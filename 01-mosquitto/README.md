@@ -32,7 +32,7 @@ $ docker run -it -p 1883:1883 -v <absolute-path-to-configuration-file>:/mosquitt
 Configuration can be changed to:
 
 * persist data to `/mosquitto/data`
-* log to `/mosquitto/log/mosquitto.log`
+* log to `/mosquitto/log/mosquitto.log` 
 
 i.e. add the following to `mosquitto.conf`:
 ```

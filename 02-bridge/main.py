@@ -16,16 +16,16 @@ from typing import NamedTuple
 import paho.mqtt.client as mqtt
 from influxdb import InfluxDBClient
 
-#INFLUXDB_ADDRESS = 'influxdb'
-INFLUXDB_ADDRESS = 'localhost'
+INFLUXDB_ADDRESS = 'influxdb'
+#INFLUXDB_ADDRESS = 'localhost'
 INFLUXDB_PORT = 8086
 INFLUXDB_USER = 'root'
 INFLUXDB_PASSWORD = 'root'
 INFLUXDB_DATABASE = 'home_db'
  
 MQTT_PORT= 1883
-#MQTT_ADDRESS = 'mosquitto'
-MQTT_ADDRESS = 'localhost'
+MQTT_ADDRESS = 'mosquitto'
+#MQTT_ADDRESS = 'localhost'
 MQTT_USER = 'mqttuser'
 MQTT_PASSWORD = 'mqttpassword'
 MQTT_TOPIC = 'bongo/+/+'  # bongo/[sensor]/[measurement]
@@ -50,11 +50,16 @@ def on_message(client, userdata, msg):
         measurement = match.group(2)
         payload = msg.payload.decode('utf-8')
         js = json.loads(payload)
+        geohash = None
+        if 'geohash' in js:
+            geohash = js["geohash"]
+            print( 'geohash: ' + geohash )
         json_body = [
             {
                 "measurement": measurement,
                 "tags": {
-                    "sensor": sensor
+                    "sensor": sensor,
+                    "geohash": geohash
                 },
                 "time": str(now), 
                 "fields": js

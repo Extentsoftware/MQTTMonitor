@@ -5,7 +5,7 @@ services:
     image: eclipse-mosquitto:1.6
     container_name: mosquitto
     ports:
-      - 1883:1883
+      - 2883:1883
     volumes:
       #- ./01-mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
       - ${DATA_DIR}/mosquitto/data:/mosquitto/data
@@ -22,7 +22,7 @@ services:
     ports:
       - 8086:8086
     volumes:
-      - ${DATA_DIR}/influxdb:/var/lib/influxdb
+      - ${DATA_DIR}/influxdb2:/var/lib/influxdb
     restart: always
 
   grafana:
