@@ -1,0 +1,16 @@
+apiVersion : apps/v1beta1
+kind: Deployment
+metadata:
+  name: "kub-9985"
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: "kub-9985"
+    spec:
+      containers:
+        - name: "kub-9985"
+          image: "bongo.azurecr.io/kub"
+          ports:
+          - containerPort: 80
