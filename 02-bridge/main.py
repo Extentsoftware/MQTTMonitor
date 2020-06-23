@@ -5,6 +5,7 @@
 This script receives MQTT data and saves those to InfluxDB.
 
 """
+import os
 import math
 import json
 from datetime import date
@@ -16,16 +17,16 @@ from typing import NamedTuple
 import paho.mqtt.client as mqtt
 from influxdb import InfluxDBClient
 
-INFLUXDB_ADDRESS = 'influxdb'
-#INFLUXDB_ADDRESS = 'localhost'
+#INFLUXDB_ADDRESS = os.environ.get('INFLUXDB_ADDRESS')
+INFLUXDB_ADDRESS = 'localhost'
 INFLUXDB_PORT = 8086
 INFLUXDB_USER = 'root'
 INFLUXDB_PASSWORD = 'root'
 INFLUXDB_DATABASE = 'home_db'
  
 MQTT_PORT= 1883
-MQTT_ADDRESS = 'mosquitto'
-#MQTT_ADDRESS = 'localhost'
+#MQTT_ADDRESS = os.environ.get('MOSQUITTO_ADDRESS')
+MQTT_ADDRESS = 'localhost'
 MQTT_USER = 'mqttuser'
 MQTT_PASSWORD = 'mqttpassword'
 MQTT_TOPIC = 'bongo/+/+'  # bongo/[sensor]/[measurement]
@@ -89,5 +90,5 @@ def main():
     mqtt_client.loop_forever()
 
 if __name__ == '__main__':
-    print('MQTT to InfluxDB bridge v1.0')
+    print('MQTT to InfluxDB bridge v1.1')
     main()

@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: "{{ include "MQQTMonitor.fullname" . }}-test-connection"
+  name: "{{ include "mqttmonitor.fullname" . }}-test-connection"
   labels:
-    {{- include "MQQTMonitor.labels" . | nindent 4 }}
+    {{- include "mqttmonitor.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": test-success
 spec:
@@ -11,5 +11,5 @@ spec:
     - name: wget
       image: busybox
       command: ['wget']
-      args: ['{{ include "MQQTMonitor.fullname" . }}:{{ .Values.service.port }}']
+      args: ['{{ include "mqttmonitor.fullname" . }}:{{ .Values.service.port }}']
   restartPolicy: Never

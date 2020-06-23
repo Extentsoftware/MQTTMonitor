@@ -2,14 +2,14 @@
 apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ include "MQTTMonitor.fullname" . }}
+  name: {{ include "mqttmonitor.fullname" . }}
   labels:
-    {{- include "MQTTMonitor.labels" . | nindent 4 }}
+    {{- include "mqttmonitor.labels" . | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ include "MQTTMonitor.fullname" . }}
+    name: {{ include "mqttmonitor.fullname" . }}
   minReplicas: {{ .Values.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.autoscaling.maxReplicas }}
   metrics:
