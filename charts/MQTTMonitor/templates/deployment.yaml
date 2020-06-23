@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+spec:
+  containers:
+    - image: eclipse-mosquitto
+      imagePullPolicy: Always
+      name: mosquitto
+      resources: {}
+      securityContext:
+        privileged: false
+        procMount: Default
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+    - image: influxdb
+      imagePullPolicy: Always
+      name: influxdb
+      resources: {}
+      securityContext:
+        privileged: false
+        procMount: Default
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+    - image: grafana/grafana
+      imagePullPolicy: Always
+      name: grafana
+      resources: {}
+      securityContext:
+        privileged: false
+        procMount: Default
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+  dnsPolicy: ClusterFirst
+  nodeName: aks-agentpool-86275814-0
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
