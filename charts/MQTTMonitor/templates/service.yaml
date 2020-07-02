@@ -7,9 +7,10 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: http
+    - port: {{ .Values.service.externalport }}
+      targetPort: {{ .Values.service.targetport }}
       protocol: TCP
       name: http
   selector:
-    {{- include "mqttmonitor.selectorLabels" . | nindent 4 }}
+    app: grafana
+#    {{- include "mqttmonitor.selectorLabels" . | nindent 4 }}
