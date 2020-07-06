@@ -118,10 +118,14 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  annotations:
+    service.beta.kubernetes.io/azure-dns-label-name: mosquitto
+    service.beta.kubernetes.io/azure-load-balancer-resource-group: MC_Bongo_Bongo_uksouth
   name: mosquitto
   labels:
-      environment: dev
+    environment: devs
 spec:
+  loadBalancerIP: 20.49.146.32
   type: LoadBalancer
   ports:
   - port: 1883
@@ -194,4 +198,5 @@ spec:
           serviceName: grafana
           servicePort: 80
         path: /(.*)
+    host: bongo.uksouth.cloudapp.azure.com
 
