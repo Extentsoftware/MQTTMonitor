@@ -1,0 +1,120 @@
+piVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: "2020-07-29T06:13:33Z"
+  generateName: mqttbridge-59b55d9b69-
+  labels:
+    app: mqttbridge
+    pod-template-hash: 59b55d9b69
+  name: mqttbridge-59b55d9b69-7tvnj
+  namespace: dev
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: ReplicaSet
+    name: mqttbridge-59b55d9b69
+    uid: ae83b047-03cf-44b5-b9a5-5cdf100813f6
+  resourceVersion: "2408280"
+  selfLink: /api/v1/namespaces/dev/pods/mqttbridge-59b55d9b69-7tvnj
+  uid: 28de1851-1719-4b3f-8960-d497c84fd0ae
+spec:
+  containers:
+  - env:
+    - name: INFLUXDB_ADDRESS
+      value: influxdb
+    - name: MOSQUITTO_ADDRESS
+      value: mosquitto
+    image: gluteusmaximus/mqttbridge
+    imagePullPolicy: Always
+    name: mqttbridge
+    resources:
+      limits:
+        cpu: 250m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: default-token-q4gmh
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  nodeName: aks-agentpool-30543642-vmss000000
+  nodeSelector:
+    beta.kubernetes.io/os: linux
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - name: default-token-q4gmh
+    secret:
+      defaultMode: 420
+      secretName: default-token-q4gmh
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2020-07-29T06:13:33Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2020-07-29T06:13:33Z"
+    message: 'containers with unready status: [mqttbridge]'
+    reason: ContainersNotReady
+    status: "False"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2020-07-29T06:13:33Z"
+    message: 'containers with unready status: [mqttbridge]'
+    reason: ContainersNotReady
+    status: "False"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2020-07-29T06:13:33Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: docker://ffd6eb62a3481365b44ddc20922fa6c202bc85e879cb2663e529dd528638912c
+    image: gluteusmaximus/mqttbridge:latest
+    imageID: docker-pullable://gluteusmaximus/mqttbridge@sha256:bc82ea9ec03c1833e5cd5f4543af2e13590f6b038240b85267c8f43e9762dc7f
+    lastState:
+      terminated:
+        containerID: docker://5d5475b5a3dfdcac0beaa83ae36b11c45a034dcc6e1ea0281989782fcd2bd5cd
+        exitCode: 1
+        finishedAt: "2020-07-29T06:14:03Z"
+        reason: Error
+        startedAt: "2020-07-29T06:14:03Z"
+    name: mqttbridge
+    ready: false
+    restartCount: 3
+    started: false
+    state:
+      terminated:
+        containerID: docker://ffd6eb62a3481365b44ddc20922fa6c202bc85e879cb2663e529dd528638912c
+        exitCode: 1
+        finishedAt: "2020-07-29T06:14:34Z"
+        reason: Error
+        startedAt: "2020-07-29T06:14:34Z"
+  hostIP: 10.240.0.4
+  phase: Running
+  podIP: 10.244.0.52
+  podIPs:
+  - ip: 10.244.0.52
+  qosClass: Burstable
+  startTime: "2020-07-29T06:13:33Z"

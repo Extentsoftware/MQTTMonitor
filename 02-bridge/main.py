@@ -16,6 +16,7 @@ from typing import NamedTuple
 
 import paho.mqtt.client as mqtt
 from influxdb import InfluxDBClient
+import requests 
 
 INFLUXDB_ADDRESS = os.environ.get('INFLUXDB_ADDRESS')
 #INFLUXDB_ADDRESS = 'localhost'
@@ -33,7 +34,17 @@ MQTT_TOPIC = 'bongo/+/+'  # bongo/[sensor]/[measurement]
 MQTT_REGEX = 'bongo/([^/]+)/([^/]+)'
 MQTT_CLIENT_ID = 'MQTTInfluxDBBridgeA'
 
+FARMOS_API_ENDPOINT = "https://Bongo.azurefd.net/farm/sensor/listener/"
+
+
 influxdb_client = InfluxDBClient(INFLUXDB_ADDRESS, INFLUXDB_PORT, INFLUXDB_USER, INFLUXDB_PASSWORD, None)
+
+def send_to_farmos(sensor, data):
+    privatekey = '4665a2572dd9190b78eb19745a13b8b0'
+    publickey = '44d91434490a4711a6dac50f5cc31dee'
+    url = FARMOS_API_ENDPOINT + publickey + '?private_key=' + privatekey
+    print(url)
+    r = requests.post(url = url, data = data) 
 
 def on_connect(client, userdata, flags, rc):
     """ The callback for when the client receives a CONNACK response from the server."""
@@ -65,9 +76,10 @@ def on_message(client, userdata, msg):
                 "time": str(now), 
                 "fields": js
             }
-        ]
-        print( "got json" )
+        ]        
+        send_to_farmos(sensor, payload);
         influxdb_client.write_points(json_body)
+        
     else:
         print( "bad pattern match on topic name" )
 
@@ -90,5 +102,5 @@ def main():
     mqtt_client.loop_forever()
 
 if __name__ == '__main__':
-    print('MQTT to InfluxDB bridge v1.1')
+    print('MQTT to InfluxDB bridge v1.2')
     main()
