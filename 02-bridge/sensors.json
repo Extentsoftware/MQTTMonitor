@@ -1,0 +1,20 @@
+{
+    "farmos":{
+        "enabled": true,
+        "address":"https://Bongo.azurefd.net/farm/sensor/listener/"
+    },
+    "sensors":[
+        {
+            "name": "theta",
+            "sensor": "807d3ad43a54",
+            "privatekey": "311ca5b09ede5883bf9272a2e26bd7bf",
+            "publickey": "ebbdb16b6e87ddc2314cd55bc970a358"
+        },
+        {
+            "name": "beta",
+            "sensor": "807d3ad43a10",
+            "privatekey": "4665a2572dd9190b78eb19745a13b8b0",
+            "publickey": "44d91434490a4711a6dac50f5cc31dee"
+        }
+    ]
+}

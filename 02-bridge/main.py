@@ -7,6 +7,7 @@ This script receives MQTT data and saves those to InfluxDB.
 """
 import os
 import math
+import decimal
 import json
 from datetime import date
 from datetime import time
@@ -39,6 +40,7 @@ FARMOS_API_ENDPOINT = "https://Bongo.azurefd.net/farm/sensor/listener/"
 
 influxdb_client = InfluxDBClient(INFLUXDB_ADDRESS, INFLUXDB_PORT, INFLUXDB_USER, INFLUXDB_PASSWORD, None)
 
+
 def send_to_farmos(sensor, data):
     privatekey = '4665a2572dd9190b78eb19745a13b8b0'
     publickey = '44d91434490a4711a6dac50f5cc31dee'
@@ -52,34 +54,47 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe(MQTT_TOPIC)
 
 def on_message(client, userdata, msg):
-    """The callback for when a PUBLISH message is received from the server."""
     print(msg.topic + ' ' + str(msg.payload))
     now = datetime.now()
     print(now)
-    match = re.match(MQTT_REGEX, msg.topic)
+    process_message(msg.topic, msg.payload)
+    
+def process_message(topic, payload):
+    """The callback for when a PUBLISH message is received from the server."""
+    print(topic + ' ' + str(payload))
+    now = datetime.now()
+    print(now)
+    match = re.match(MQTT_REGEX, topic)
     if match:
         sensor = match.group(1)
         measurement = match.group(2)
-        payload = msg.payload.decode('utf-8')
-        js = json.loads(payload)
-        geohash = None
-        if 'geohash' in js:
-            geohash = js["geohash"]
-            print( 'geohash: ' + geohash )
-        json_body = [
-            {
-                "measurement": measurement,
-                "tags": {
-                    "sensor": sensor,
-                    "geohash": geohash
-                },
-                "time": str(now), 
-                "fields": js
-            }
-        ]        
-        send_to_farmos(sensor, payload);
-        influxdb_client.write_points(json_body)
-        
+        payload = payload.decode('utf-8')
+        payload = payload.replace('\\n', '')
+        print(payload)
+        try:
+            js = json.loads(payload)
+            geohash = None
+            if 'geohash' in js:
+                geohash = js["geohash"]
+                print( 'geohash: ' + geohash )
+            json_body = [
+                {
+                    "measurement": measurement,
+                    "tags": {
+                        "sensor": sensor,
+                        "geohash": geohash
+                    },
+                    "time": str(now), 
+                    "fields": js
+                }
+            ]        
+            send_to_farmos(sensor, payload);
+
+            print('Write to Influx')
+            print(json_body)
+            influxdb_client.write_points(json_body)
+        except Exception as e:
+            print("Oops!  That was no valid number.  Try again...")        
     else:
         print( "bad pattern match on topic name" )
 
@@ -89,17 +104,18 @@ def _init_influxdb_database():
         influxdb_client.create_database(INFLUXDB_DATABASE)
     influxdb_client.switch_database(INFLUXDB_DATABASE)
 
-
-def main():
-    _init_influxdb_database()
-
+def _init_mqtt():
     mqtt_client = mqtt.Client(MQTT_CLIENT_ID)
     mqtt_client.username_pw_set(MQTT_USER, MQTT_PASSWORD)
     mqtt_client.on_connect = on_connect
     mqtt_client.on_message = on_message
-
     mqtt_client.connect(MQTT_ADDRESS, MQTT_PORT)
     mqtt_client.loop_forever()
+
+def main():
+    _init_influxdb_database()
+    _init_mqtt()
+    
 
 if __name__ == '__main__':
     print('MQTT to InfluxDB bridge v1.2')
