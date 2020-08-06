@@ -36,6 +36,7 @@ MQTT_REGEX = 'bongo/([^/]+)/([^/]+)'
 MQTT_CLIENT_ID = 'MQTTInfluxDBBridgeA'
 
 FARMOS_API_ENDPOINT = "https://Bongo.azurefd.net/farm/sensor/listener/"
+FARMOS_ENABLED = False
 
 
 influxdb_client = InfluxDBClient(INFLUXDB_ADDRESS, INFLUXDB_PORT, INFLUXDB_USER, INFLUXDB_PASSWORD, None)
@@ -108,11 +109,21 @@ def _init_mqtt():
     mqtt_client = mqtt.Client(MQTT_CLIENT_ID)
     mqtt_client.username_pw_set(MQTT_USER, MQTT_PASSWORD)
     mqtt_client.on_connect = on_connect
-    mqtt_client.on_message = on_message
+    mqtt_client.on_message = on_message    
     mqtt_client.connect(MQTT_ADDRESS, MQTT_PORT)
     mqtt_client.loop_forever()
 
+def _read_config():
+    print(os.getcwd())
+    global FARMOS_ENABLED
+    global FARMOS_API_ENDPOINT
+    with open('sensors.json') as json_file:
+        js = json.load(json_file)
+        FARMOS_API_ENDPOINT = js["farmos"]["address"]
+        FARMOS_ENABLED = js["farmos"]["enabled"]
+    
 def main():
+    _read_config();
     _init_influxdb_database()
     _init_mqtt()
     
