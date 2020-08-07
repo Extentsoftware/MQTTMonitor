@@ -35,19 +35,30 @@ MQTT_TOPIC = 'bongo/+/+'  # bongo/[sensor]/[measurement]
 MQTT_REGEX = 'bongo/([^/]+)/([^/]+)'
 MQTT_CLIENT_ID = 'MQTTInfluxDBBridgeA'
 
-FARMOS_API_ENDPOINT = "https://Bongo.azurefd.net/farm/sensor/listener/"
-FARMOS_ENABLED = False
-
-
 influxdb_client = InfluxDBClient(INFLUXDB_ADDRESS, INFLUXDB_PORT, INFLUXDB_USER, INFLUXDB_PASSWORD, None)
 
+def get_sensor_geohash(sensor):
+    if sensor in CONFIG["sensors"]:
+        sensor_config = CONFIG["sensors"][sensor]
+        if "geohash" in sensor_config:
+            return sensor_config["geohash"]
+    return None
 
 def send_to_farmos(sensor, data):
-    privatekey = '4665a2572dd9190b78eb19745a13b8b0'
-    publickey = '44d91434490a4711a6dac50f5cc31dee'
-    url = FARMOS_API_ENDPOINT + publickey + '?private_key=' + privatekey
-    print(url)
-    r = requests.post(url = url, data = data) 
+    if CONFIG["farmos"]["enabled"]:
+        if sensor in CONFIG["sensors"]:
+            sensor_config = CONFIG["sensors"][sensor]
+            if "farmos_privatekey" in sensor_config:
+                privatekey = sensor_config["farmos_privatekey"]
+                publickey = sensor_config["farmos_publickey"]
+                endpoint = CONFIG["farmos"]["address"]
+                url = endpoint + publickey + '?private_key=' + privatekey
+                print(url)
+                r = requests.post(url = url, data = data) 
+            else:
+                print(sensor, " not configure for farmos" )
+        else:
+            print(sensor, " does not exist in sensor config file" )
 
 def on_connect(client, userdata, flags, rc):
     """ The callback for when the client receives a CONNACK response from the server."""
@@ -55,29 +66,26 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe(MQTT_TOPIC)
 
 def on_message(client, userdata, msg):
-    print(msg.topic + ' ' + str(msg.payload))
-    now = datetime.now()
-    print(now)
     process_message(msg.topic, msg.payload)
     
 def process_message(topic, payload):
     """The callback for when a PUBLISH message is received from the server."""
-    print(topic + ' ' + str(payload))
     now = datetime.now()
-    print(now)
     match = re.match(MQTT_REGEX, topic)
     if match:
         sensor = match.group(1)
         measurement = match.group(2)
         payload = payload.decode('utf-8')
         payload = payload.replace('\\n', '')
-        print(payload)
         try:
             js = json.loads(payload)
+
             geohash = None
             if 'geohash' in js:
                 geohash = js["geohash"]
-                print( 'geohash: ' + geohash )
+            else:
+                geohash = get_sensor_geohash(sensor)
+            
             json_body = [
                 {
                     "measurement": measurement,
@@ -89,13 +97,13 @@ def process_message(topic, payload):
                     "fields": js
                 }
             ]        
+
             send_to_farmos(sensor, payload);
 
-            print('Write to Influx')
             print(json_body)
             influxdb_client.write_points(json_body)
         except Exception as e:
-            print("Oops!  That was no valid number.  Try again...")        
+            print(e)        
     else:
         print( "bad pattern match on topic name" )
 
@@ -114,14 +122,10 @@ def _init_mqtt():
     mqtt_client.loop_forever()
 
 def _read_config():
-    print(os.getcwd())
-    global FARMOS_ENABLED
-    global FARMOS_API_ENDPOINT
+    global CONFIG
     with open('sensors.json') as json_file:
-        js = json.load(json_file)
-        FARMOS_API_ENDPOINT = js["farmos"]["address"]
-        FARMOS_ENABLED = js["farmos"]["enabled"]
-    
+        CONFIG = json.load(json_file)
+
 def main():
     _read_config();
     _init_influxdb_database()
@@ -129,5 +133,5 @@ def main():
     
 
 if __name__ == '__main__':
-    print('MQTT to InfluxDB bridge v1.2')
+    print('MQTT to InfluxDB bridge v1.3')
     main()
