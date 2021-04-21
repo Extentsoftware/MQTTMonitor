@@ -30,7 +30,8 @@ az network public-ip create --resource-group MC_Bongo_Bongo_uksouth --name Bongo
 change IP address in mosquitto Service to the Public IP address
 
 # Useful Commands
-kubectl apply -f mqttbongo.yaml  
+cd charts
+kubectl apply -f mqttbongo.yaml
 
 kubectl get --namespace dev svc 
 

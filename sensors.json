@@ -1,6 +1,6 @@
 {
     "farmos":{
-        "enabled": false,
+        "enabled": true,
         "address":"https://Bongo.azurefd.net/farm/sensor/listener/"
     },
     "sensors":{

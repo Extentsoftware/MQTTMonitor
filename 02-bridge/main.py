@@ -14,6 +14,9 @@ from datetime import time
 from datetime import datetime
 import re
 from typing import NamedTuple
+from cayennelpp.lpp_frame import LppFrame
+import binascii
+
 
 import paho.mqtt.client as mqtt
 from influxdb import InfluxDBClient
@@ -71,41 +74,39 @@ def on_message(client, userdata, msg):
 def process_message(topic, payload):
     """The callback for when a PUBLISH message is received from the server."""
     now = datetime.now()
-    match = re.match(MQTT_REGEX, topic)
-    if match:
-        sensor = match.group(1)
-        measurement = match.group(2)
-        payload = payload.decode('utf-8')
-        payload = payload.replace('\\n', '')
-        try:
-            js = json.loads(payload)
 
-            geohash = None
-            if 'geohash' in js:
-                geohash = js["geohash"]
-            else:
-                geohash = get_sensor_geohash(sensor)
-            
-            json_body = [
+    print(binascii.hexlify(payload));
+
+    frame = LppFrame().from_bytes(payload)
+    sensor = "sensor"
+    measurement = "volts"
+
+    moist = frame.get_by_type(100)[0].value[0]
+    snr = frame.get_by_type(100)[1].value[0]
+    rssi = frame.get_by_type(100)[2].value[0]
+    pfe = frame.get_by_type(100)[3].value[0]
+    
+    temp = frame.get_by_type(103)[0].value[0]
+    volts = frame.get_by_type(116)[0].value[0]
+    id1 = frame.get_by_type(102)[0].value[0]
+    id2 = frame.get_by_type(102)[1].value[0]
+
+    sensor = int(id1) + (int(id2) << 16)
+
+    json_body = [
                 {
                     "measurement": measurement,
                     "tags": {
                         "sensor": sensor,
-                        "geohash": geohash
                     },
                     "time": str(now), 
-                    "fields": js
+                    "fields": { "moist": moist, "temp": temp, "volts": volts, "snr":snr, "rssi":rssi, "pfe":pfe }
                 }
-            ]        
+            ]     
+    send_to_farmos(sensor, payload);
 
-            send_to_farmos(sensor, payload);
-
-            print(json_body)
-            influxdb_client.write_points(json_body)
-        except Exception as e:
-            print(e)        
-    else:
-        print( "bad pattern match on topic name" )
+    print(json_body)
+    influxdb_client.write_points(json_body)
 
 def _init_influxdb_database():
     databases = influxdb_client.get_list_database()
@@ -130,8 +131,47 @@ def main():
     _read_config();
     _init_influxdb_database()
     _init_mqtt()
-    
+
+
+def getSensorValue(frame, type, channel):
+    _read_config();
+    _init_influxdb_database()
+    _init_mqtt()
+
 
 if __name__ == '__main__':
-    print('MQTT to InfluxDB bridge v1.3')
+    print('MQTT to InfluxDB bridge v1.6')
+    buffer = bytearray([0x00,0x66,0x12,0x01,0x66,0x83,0x08,0x64,0x00,0x00,0x03,0x5d,0x06,0x67,0x01,0x1d,0x07,0x74,0x01,0x97])
+    frame = LppFrame().from_bytes(buffer)
+
+    moist = frame.get_by_type(100)[0].value[0]
+    temp = frame.get_by_type(103)[0].value[0]
+    volts = frame.get_by_type(116)[0].value[0]
+    id1 = frame.get_by_type(102)[0].value[0]
+    id2 = frame.get_by_type(102)[1].value[0]
+    sensor = int(id1) + (int(id2) << 16)
+
+    x = frame.get_by_type(100)
+    snr = frame.get_by_type(100)[1].value[0]
+    rssi = frame.get_by_type(100)[2].value[0]
+    pfe = frame.get_by_type(100)[3].value[0]
+
+    # # 
+    # # getSensorValue(frame, type, channel)
+
+    # json_body = [
+    #             {
+    #                 "measurement": measurement,
+    #                 "tags": {
+    #                     "sensor": sensor,
+    #                 },
+    #                 "time": str(now), 
+    #                 "fields": { "moist": moist, "temp": temp, "volts": volts }
+    #             }
+    #         ]        
+            
+    # # print the frame and its data
+    # print(frame)
+    # print(json_body)
+
     main()
