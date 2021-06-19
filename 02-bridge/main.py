@@ -62,6 +62,8 @@ def send_to_farmos(sensor, data):
                 print(sensor, " not configure for farmos" )
         else:
             print(sensor, " does not exist in sensor config file" )
+    else:
+        print( "FarmOS disabled" )
 
 def on_connect(client, userdata, flags, rc):
     """ The callback for when the client receives a CONNACK response from the server."""
@@ -78,8 +80,8 @@ def process_message(topic, payload):
     print(binascii.hexlify(payload));
 
     frame = LppFrame().from_bytes(payload)
-    sensor = "sensor"
-    measurement = "volts"
+
+    measurement = "sensor"
 
     moist = frame.get_by_type(100)[0].value[0]
     snr = frame.get_by_type(100)[1].value[0]
@@ -87,7 +89,8 @@ def process_message(topic, payload):
     pfe = frame.get_by_type(100)[3].value[0]
     
     temp = frame.get_by_type(103)[0].value[0]
-    volts = frame.get_by_type(116)[0].value[0]
+    voltsR = frame.get_by_type(116)[0].value[0]
+    voltsS = frame.get_by_type(116)[1].value[0]
     id1 = frame.get_by_type(102)[0].value[0]
     id2 = frame.get_by_type(102)[1].value[0]
 
@@ -100,13 +103,24 @@ def process_message(topic, payload):
                         "sensor": sensor,
                     },
                     "time": str(now), 
-                    "fields": { "moist": moist, "temp": temp, "volts": volts, "snr":snr, "rssi":rssi, "pfe":pfe }
+                    "fields": 
+                    { 
+                        "moist": moist, 
+                        "temp": temp, 
+                        "voltsR": voltsR, 
+                        "voltsS": voltsS, 
+                        "snr":snr, 
+                        "rssi":rssi, 
+                        "pfe":pfe 
+                    }
                 }
-            ]     
-    send_to_farmos(sensor, payload);
+            ]
 
     print(json_body)
+
     influxdb_client.write_points(json_body)
+
+    send_to_farmos(sensor, payload);
 
 def _init_influxdb_database():
     databases = influxdb_client.get_list_database()
@@ -140,38 +154,21 @@ def getSensorValue(frame, type, channel):
 
 
 if __name__ == '__main__':
-    print('MQTT to InfluxDB bridge v1.6')
-    buffer = bytearray([0x00,0x66,0x12,0x01,0x66,0x83,0x08,0x64,0x00,0x00,0x03,0x5d,0x06,0x67,0x01,0x1d,0x07,0x74,0x01,0x97])
-    frame = LppFrame().from_bytes(buffer)
+    print('MQTT to InfluxDB bridge v1.7')
+    # buffer = bytearray([0x00,0x66,0x12,0x01,0x66,0x83,0x0a,0x64,0x00,0x00,0x00,0x00,0x06,0x67,0x00,0x00,0x07,0x74,0x00,0x00,0x08,0x74,0x01,0x8b,0x0e,0x64,0x00,0x00,0x00,0x0a,0x0f,0x64,0x00,0x00,0x00,0x5c,0x10,0x64,0x00,0x00,0x1c,0x7a])
+    # frame = LppFrame().from_bytes(buffer)
 
-    moist = frame.get_by_type(100)[0].value[0]
-    temp = frame.get_by_type(103)[0].value[0]
-    volts = frame.get_by_type(116)[0].value[0]
-    id1 = frame.get_by_type(102)[0].value[0]
-    id2 = frame.get_by_type(102)[1].value[0]
-    sensor = int(id1) + (int(id2) << 16)
+    # moist = frame.get_by_type(100)[0].value[0]
+    # temp = frame.get_by_type(103)[0].value[0]
+    # voltsR = frame.get_by_type(116)[0].value[0]
+    # voltsS = frame.get_by_type(116)[1].value[0]
+    # id1 = frame.get_by_type(102)[0].value[0]
+    # id2 = frame.get_by_type(102)[1].value[0]
+    # sensor = int(id1) + (int(id2) << 16)
 
-    x = frame.get_by_type(100)
-    snr = frame.get_by_type(100)[1].value[0]
-    rssi = frame.get_by_type(100)[2].value[0]
-    pfe = frame.get_by_type(100)[3].value[0]
-
-    # # 
-    # # getSensorValue(frame, type, channel)
-
-    # json_body = [
-    #             {
-    #                 "measurement": measurement,
-    #                 "tags": {
-    #                     "sensor": sensor,
-    #                 },
-    #                 "time": str(now), 
-    #                 "fields": { "moist": moist, "temp": temp, "volts": volts }
-    #             }
-    #         ]        
-            
-    # # print the frame and its data
-    # print(frame)
-    # print(json_body)
+    # x = frame.get_by_type(116)
+    # snr = frame.get_by_type(100)[1].value[0]
+    # rssi = frame.get_by_type(100)[2].value[0]
+    # pfe = frame.get_by_type(100)[3].value[0]
 
     main()

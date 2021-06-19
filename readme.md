@@ -1,3 +1,30 @@
+# Signing in 
+## To sign in
+
+```
+az account set --subscription 73a97781-98ea-4939-aa9d-f4c6233b011e
+az aks get-credentials --resource-group Bongo --name Bongo
+```
+
+## List deployments
+```
+kubectl get deployments --namespace dev
+```
+
+## Deploy single pod with all containers
+```
+cd chart
+helm install mqttmonitor mqttmonitor --namespace dev
+```
+
+## Deploy as separate pods
+```
+kubectl apply -f mqttbongo.yml
+```
+
+
+# get the pods IP
+kubectl get svc --namespace dev mqttmonitor --template "{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"
 
 # Create a cluster on Azure
 
@@ -7,7 +34,7 @@ kubectl create namespace -name dev
 
 # Add the official stable repository
 ```
-helm repo add stable https://kubernetes-charts.storage.googleapis.com/`
+helm repo add stable https://kubernetes-charts.storage.googleapis.com/
 ```
 
 # Use Helm to deploy an NGINX ingress controller
