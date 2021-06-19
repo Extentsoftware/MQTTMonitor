@@ -22,9 +22,18 @@ helm install mqttmonitor mqttmonitor --namespace dev
 kubectl apply -f mqttbongo.yml
 ```
 
+# get specific pods IP
+e.g. 20.49.137.76 
+```
+kubectl get svc --namespace dev mosquitto --template "{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"
+```
+Go to Azure -> Public IP addresses and config public IP that points to this address. Give
+it a name e.g. `bongomqtt.uksouth.cloudapp.azure.com`
 
-# get the pods IP
-kubectl get svc --namespace dev mqttmonitor --template "{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"
+## get the pod public IP addresses
+```
+kubectl get svc --namespace dev 
+```
 
 # Create a cluster on Azure
 
@@ -56,13 +65,6 @@ az network public-ip create --resource-group MC_Bongo_Bongo_uksouth --name Bongo
 
 change IP address in mosquitto Service to the Public IP address
 
-# Useful Commands
-cd charts
-kubectl apply -f mqttbongo.yaml
-
-kubectl get --namespace dev svc 
-
-kubectl delete -f mqttbongo.yaml
 
 ==> 51.132.212.244
 az network public-ip show --resource-group Farm --name FarmPublicIP --query ipAddress --output tsv
